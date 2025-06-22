@@ -10,7 +10,7 @@ import 'antd/dist/antd.css';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
 
 // 设置 Cesium 基础 URL
-window.CESIUM_BASE_URL = '/cesium/';
+window.CESIUM_BASE_URL = process.env.PUBLIC_URL + "/cesium/";
 
 console.log('Rendering App component...');
 

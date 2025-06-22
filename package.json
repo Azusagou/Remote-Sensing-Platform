@@ -11,7 +11,8 @@
     "@types/jest": "^27.5.2",
     "@types/styled-components": "^5.1.34",
     "antd": "^4.24.15",
-    "cesium": "^1.115.0",
+    "axios": "^1.9.0",
+    "cesium": "^1.130.0",
     "copy-webpack-plugin": "^12.0.2",
     "echarts": "^5.5.0",
     "echarts-for-react": "^3.0.2",
@@ -52,9 +53,12 @@
     ]
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.27.2",
     "@types/leaflet": "^1.9.8",
     "@types/node": "^22.15.29",
     "@types/react": "^19.1.6",
-    "@types/react-dom": "^19.1.5"
+    "@types/react-dom": "^19.1.5",
+    "babel-loader": "^10.0.0",
+    "script-loader": "^0.7.2"
   }
 }

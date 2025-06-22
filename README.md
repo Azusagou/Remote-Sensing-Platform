@@ -6,7 +6,10 @@
 ## 主要功能
 - 地球三维可视化（基于 Cesium）
 - 遥感影像上传与处理
-- 卫星数据面板
+- 卫星数据检索与下载
+  - 支持多源卫星数据（Landsat、Sentinel等）
+  - 多种检索方式（行政区域、坐标范围、绘制区域）
+  - 多条件过滤（时间范围、云量等）
 - 数据分析与可视化
 - 友好的页面布局与导航
 
@@ -30,6 +33,11 @@ npm install
 npm start
 ```
 
+> **注意**：项目已配置.npmrc文件使用国内镜像源，可以加快依赖安装速度。如果安装依然很慢，可以尝试以下方法：
+> - 删除package-lock.json文件后再安装：`rm package-lock.json && npm install`
+> - 确保npm已配置为使用国内镜像源：`npm config set registry https://registry.npmmirror.com/`
+> - 使用cnpm安装：`npm install -g cnpm --registry=https://registry.npmmirror.com/ && cnpm install`
+
 ## 项目打包
 ```bash
 npm run build
@@ -44,12 +52,22 @@ npm run build
 │   ├── index.tsx          # 应用入口
 │   ├── pages/             # 页面级组件
 │   ├── components/        # 可复用组件
+│   │   ├── CesiumEarthViewer.tsx    # 地球可视化组件
+│   │   ├── EnhancedSatelliteDataPanel.tsx  # 卫星数据检索面板
+│   │   ├── DrawPolygonTool.tsx      # 区域绘制工具
+│   │   └── ...            # 其他组件
+│   ├── services/          # 服务层
+│   │   ├── SatelliteDataService.ts  # 卫星数据服务
+│   │   ├── GeoService.ts            # 地理空间服务
+│   │   ├── RegionService.ts         # 行政区域服务
+│   │   └── ...            # 其他服务
 │   ├── layouts/           # 布局组件
 │   ├── config/            # 配置文件
 │   ├── types/             # 类型定义
 │   └── ...                # 其他
 ├── package.json           # 项目依赖与脚本
 ├── tsconfig.json          # TypeScript 配置
+├── .npmrc                 # npm镜像源配置
 ├── .gitignore             # Git忽略文件
 └── README.md              # 项目说明文档
 ```

@@ -232,6 +232,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, onNavigate }) => {
           <Menu.Item key="data-search" onClick={() => handleNavigation('home')}>
             数据检索
           </Menu.Item>
+          <Menu.Item key="data-analysis" onClick={() => handleNavigation('data-analysis')}>
+            数据分析
+          </Menu.Item>
+          <Menu.Item key="model-training">
+            模型训练
+          </Menu.Item>
+          <Menu.Item key="app-space">
+            应用空间
+          </Menu.Item>
           <Menu.Item key="target-classification" onClick={() => handleModuleChange('target-classification')}>
             目标分类
           </Menu.Item>
@@ -246,15 +255,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, onNavigate }) => {
           </Menu.Item>
           <Menu.Item key="processing" onClick={() => handleNavigation('processing')}>
             处理分析
-          </Menu.Item>
-          <Menu.Item key="data-analysis" onClick={() => handleNavigation('data-analysis')}>
-            数据分析
-          </Menu.Item>
-          <Menu.Item key="model-training">
-            模型训练
-          </Menu.Item>
-          <Menu.Item key="app-space">
-            应用空间
           </Menu.Item>
         </Menu>
       </TopNavMenu>
