@@ -324,11 +324,11 @@ const CesiumEarthViewer: React.FC<CesiumEarthViewerProps> = ({ toggleSidePanel, 
         // 确保地图类型在地形加载后应用
         setTimeout(() => handleMapTypeChange(baseMap), 500);
       } catch (error) {
-        console.error("地形数据加载失败:", error);
+        // console.error("地形数据加载失败:", error);
         // 出错时也设置加载完成，使用平面地球
         setTerrainProvider(null);
         setIsTerrainLoaded(true);
-        message.error("地形数据加载失败，使用平面地球");
+        // message.error("地形数据加载失败，使用平面地球");
       }
     };
     
@@ -341,7 +341,7 @@ const CesiumEarthViewer: React.FC<CesiumEarthViewerProps> = ({ toggleSidePanel, 
   const handleMapTypeChange = (type: string) => {
     // 增加判空，防止未加载时出错
     if (!isTerrainLoaded || !viewerRef.current || !viewerRef.current.cesiumElement) {
-      message.warning('地球尚未加载完成，无法切换底图');
+      // message.warning('地球尚未加载完成，无法切换底图');
       return;
     }
     const viewer = viewerRef.current.cesiumElement;
