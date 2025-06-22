@@ -85,7 +85,7 @@ const Home: React.FC = () => {
         if (!cesiumLoaded) {
           clearInterval(checkCesium);
           console.error('Cesium实例加载超时');
-          message.error('地图加载失败，请刷新页面重试');
+          // message.error('地图加载失败，请刷新页面重试');
         }
       }, 10000);
     };
