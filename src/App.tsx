@@ -3,6 +3,7 @@ import MainLayout from './layouts/MainLayout';
 import Home from './pages/Home';
 import ProcessingPage from './pages/ProcessingPage';
 import DataAnalysisPage from './pages/DataAnalysisPage';
+import BiomassInversionPage from './pages/BiomassInversionPage';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/lib/locale/zh_CN';
 import './App.css';
@@ -20,6 +21,8 @@ const App: React.FC = () => {
         return <ProcessingPage module={currentModule} />;
       case 'data-analysis':
         return <DataAnalysisPage />;
+      case 'biomass-inversion':
+        return <BiomassInversionPage />;
       case 'home':
       default:
         return <Home />;
@@ -44,4 +47,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App; 
+export default App;

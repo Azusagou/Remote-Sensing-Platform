@@ -233,8 +233,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, onNavigate }) => {
             数据检索
           </Menu.Item>
           <Menu.Item key="data-analysis" onClick={() => handleNavigation('data-analysis')}>
-            数据分析
-          </Menu.Item>
+              <BarChartOutlined />
+              <span>数据分析</span>
+            </Menu.Item>
+            <Menu.Item key="biomass-inversion" onClick={() => handleNavigation('biomass-inversion')}>
+              <ExperimentOutlined />
+              <span>生物量反演</span>
+            </Menu.Item>
           <Menu.Item key="model-training">
             模型训练
           </Menu.Item>
@@ -266,4 +271,4 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, onNavigate }) => {
   );
 };
 
-export default MainLayout; 
+export default MainLayout;
