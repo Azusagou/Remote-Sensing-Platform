@@ -168,7 +168,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, onNavigate }) => {
   const handleModuleChange = (module: string) => {
     setActiveModule(module);
     onNavigate('processing', module);
-    setCurrentPage('processing');
+    setCurrentPage(module); // 修正：同步currentPage为模块key
   };
   
   const handleNavigation = (page: string) => {
@@ -228,7 +228,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, onNavigate }) => {
       </StyledHeader>
       
       <TopNavMenu>
-        <Menu mode="horizontal" selectedKeys={[currentPage === 'home' ? 'data-search' : currentPage === 'data-analysis' ? 'data-analysis' : activeModule]}>
+        <Menu mode="horizontal" selectedKeys={[currentPage]}>
           <Menu.Item key="data-search" onClick={() => handleNavigation('home')}>
             数据检索
           </Menu.Item>
