@@ -10,6 +10,7 @@ import ReactECharts from 'echarts-for-react';
 import { EChartsOption } from 'echarts';
 import moment from 'moment';
 import { Tooltip as AntdTooltip } from 'antd';
+import Papa from 'papaparse'; // 新增：用于解析CSV
 
 const { TabPane } = Tabs;
 const { TextArea } = Input;
@@ -164,17 +165,17 @@ const TightCard = styled(Card)`
 `;
 
 // 模拟热力图数据生成函数
-const generateHeatmapData = () => {
-  const data = [];
-  const size = 1000;
-  for (let y = 0; y < size; y += 20) {
-    for (let x = 0; x < size; x += 20) {
-      const value = Math.random() * 544.2 + 29.6; // 生成29.6-573.8之间的随机值
-      data.push([x, y, value]);
-    }
-  }
-  return data;
-};
+// const generateHeatmapData = () => {
+//   const data = [];
+//   const size = 1000;
+//   for (let y = 0; y < size; y += 20) {
+//     for (let x = 0; x < size; x += 20) {
+//       const value = Math.random() * 544.2 + 29.6; // 生成29.6-573.8之间的随机值
+//       data.push([x, y, value]);
+//     }
+//   }
+//   return data;
+// };
 
 const StatisticsContainer = styled.div`
   display: flex;
@@ -220,35 +221,35 @@ const getColorMap = () => {
 };
 
 // 从CSV数据生成统计数据
-const generateCDFDataFromCSV = () => {
-  // 模拟解析biomass_statistics_7.csv中的区间分布数据
-  const intervalData = [
-    {start: 29.6, end: 50, percentage: 0.0079},
-    {start: 50, end: 100, percentage: 0.0660},
-    {start: 100, end: 150, percentage: 1.1780},
-    {start: 150, end: 200, percentage: 3.6488},
-    {start: 200, end: 250, percentage: 17.4916},
-    {start: 250, end: 300, percentage: 61.2517},
-    {start: 300, end: 350, percentage: 13.7279},
-    {start: 350, end: 400, percentage: 1.7406},
-    {start: 400, end: 450, percentage: 0.5787},
-    {start: 450, end: 500, percentage: 0.2468},
-    {start: 500, end: 550, percentage: 0.0576},
-    {start: 550, end: 600, percentage: 0.0045}
-  ];
+// const generateCDFDataFromCSV = () => {
+//   // 模拟解析biomass_statistics_7.csv中的区间分布数据
+//   const intervalData = [
+//     {start: 29.6, end: 50, percentage: 0.0079},
+//     {start: 50, end: 100, percentage: 0.0660},
+//     {start: 100, end: 150, percentage: 1.1780},
+//     {start: 150, end: 200, percentage: 3.6488},
+//     {start: 200, end: 250, percentage: 17.4916},
+//     {start: 250, end: 300, percentage: 61.2517},
+//     {start: 300, end: 350, percentage: 13.7279},
+//     {start: 350, end: 400, percentage: 1.7406},
+//     {start: 400, end: 450, percentage: 0.5787},
+//     {start: 450, end: 500, percentage: 0.2468},
+//     {start: 500, end: 550, percentage: 0.0576},
+//     {start: 550, end: 600, percentage: 0.0045}
+//   ];
 
-  // 计算累积分布
-  let cumulativePercentage = 0;
-  const cdfData: { biomass: number; percentage: number }[] = [];
-  intervalData.forEach(interval => {
-    cumulativePercentage += interval.percentage;
-    cdfData.push({
-      biomass: interval.end,
-      percentage: parseFloat(cumulativePercentage.toFixed(2))
-    });
-  });
-  return cdfData;
-};
+//   // 计算累积分布
+//   let cumulativePercentage = 0;
+//   const cdfData: { biomass: number; percentage: number }[] = [];
+//   intervalData.forEach(interval => {
+//     cumulativePercentage += interval.percentage;
+//     cdfData.push({
+//       biomass: interval.end,
+//       percentage: parseFloat(cumulativePercentage.toFixed(2))
+//     });
+//   });
+//   return cdfData;
+// };
 
 // 模拟坐标系检测函数
 const detectCoordinateSystem = (file: File): Promise<string> => {
@@ -355,7 +356,7 @@ const BiomassInversion: React.FC = () => {
   const [showAlertAreas, setShowAlertAreas] = useState<boolean>(true);
   const [binCount, setBinCount] = useState<number>(10);
   const [binType, setBinType] = useState<string>('equal');
-  const [cdfData, setCdfData] = useState(generateCDFDataFromCSV());
+  // const [cdfData, setCdfData] = useState(generateCDFDataFromCSV());
   const [alertPercentage, setAlertPercentage] = useState<number>(0.07);
 
   // 新增状态
@@ -385,6 +386,59 @@ const BiomassInversion: React.FC = () => {
 
   const mapRef = useRef<HTMLDivElement>(null);
   const pixelInfoRef = useRef<HTMLDivElement>(null);
+
+  // 新增：保存后端返回结果的state
+  const [resultData, setResultData] = useState<any>(null);
+  // 新增：保存后端统计数据
+  const [stats, setStats] = useState<any>(null);
+  //防止页面刷新后，结果数据丢失
+  // 1. 保存 resultData 到 localStorage
+  useEffect(() => {
+    if (resultData) {
+      localStorage.setItem('biomass_result_data', JSON.stringify(resultData));
+    }
+  }, [resultData]);
+
+  // 2. 页面加载时自动恢复
+  useEffect(() => {
+    const saved = localStorage.getItem('biomass_result_data');
+    if (saved) {
+      setResultData(JSON.parse(saved));
+      setInversionComplete(true);
+      setActiveTab('visualization');
+    }
+  }, []);
+
+  // 监听resultData变化，自动拉取并解析后端CSV
+  useEffect(() => {
+    if (resultData?.biomass_statistics) {
+      fetch(`http://localhost:8000/${resultData.biomass_statistics}`)
+        .then(res => res.text())
+        .then(csv => {
+          // 只取“Overall Statistics”区块
+          const lines = csv.split('\n');
+          const stats: any = {};
+          let inStats = false;
+          for (let line of lines) {
+            if (line.includes('=== Overall Statistics ===')) {
+              inStats = true;
+              continue;
+            }
+            if (inStats && line.startsWith('===')) break; // 到下一区块了
+            if (inStats && line.includes(',')) {
+              const [key, value] = line.split(',');
+              if (key && value) {
+                if (key.includes('Mean')) stats.mean = parseFloat(value).toFixed(2);
+                if (key.includes('Median')) stats.median = parseFloat(value).toFixed(2);
+                if (key.includes('Standard Deviation')) stats.std = parseFloat(value).toFixed(2);
+                if (key.trim() === 'Valid Pixels') stats.valid_pixel = parseInt(value);
+              }
+            }
+          }
+          setStats(stats);
+        });
+    }
+  }, [resultData]);
 
   // 文件上传配置
   const uploadProps: UploadProps = {
@@ -488,7 +542,7 @@ const BiomassInversion: React.FC = () => {
   };
 
   // 开始反演处理
-  const startInversion = () => {
+  const startInversion = async () => {
     // 验证输入
     if (!taskDate) {
       message.error('请选择任务日期');
@@ -507,29 +561,67 @@ const BiomassInversion: React.FC = () => {
     }
 
     // 模拟反演过程
-    setIsInverting(true);
-    setInversionProgress(0);
-    setInversionComplete(false);
+  //   setIsInverting(true);
+  //   setInversionProgress(0);
+  //   setInversionComplete(false);
 
-    const interval = setInterval(() => {
-      setInversionProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsInverting(false);
-          setInversionComplete(true);
-          setActiveTab('visualization');
-          return 100;
-        }
-        return prev + Math.random() * 10;
+  //   const interval = setInterval(() => {
+  //     setInversionProgress(prev => {
+  //       if (prev >= 100) {
+  //         clearInterval(interval);
+  //         setIsInverting(false);
+  //         setInversionComplete(true);
+  //         setActiveTab('visualization');
+  //         return 100;
+  //       }
+  //       return prev + Math.random() * 10;
+  //     });
+  //   }, 500);
+  // };
+    // 获取文件对象
+    const demFile = uploadedFiles.satellite[0]?.originFileObj; // 你实际的DEM文件
+    const sentinelFile = uploadedFiles.satellite[0]?.originFileObj; // 你实际的Sentinel文件
+    const temperatureFile = uploadedFiles.temperature[0]?.originFileObj;
+    const precipitationFile = uploadedFiles.precipitation[0]?.originFileObj;
+
+    if (!demFile || !sentinelFile || !temperatureFile || !precipitationFile) {
+      message.error('请上传所有必需的文件');
+      setIsInverting(false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('dem', demFile);
+    formData.append('sentinel', sentinelFile);
+    formData.append('temperature', temperatureFile);
+    formData.append('precipitation', precipitationFile);
+    formData.append('patch_offset_x', '0');
+    formData.append('patch_offset_y', '0');
+    formData.append('patch_size', '1024');
+    formData.append('selected_date', '7');
+    formData.append('debug', 'true'); // 调试模式
+
+    try {
+      const res = await fetch('http://localhost:8000/api/biomass_predict', {
+        method: 'POST',
+        body: formData,
       });
-    }, 500);
+      const data = await res.json();
+      if (data.success) {
+        message.success('预测成功！');
+        setResultData(data); // 保存后端返回的结果
+        setInversionComplete(true);
+        setActiveTab('visualization');
+      } else {
+        message.error('预测失败: ' + data.msg);
+      }
+    } catch (err) {
+      message.error('请求失败');
+    } finally {
+      setIsInverting(false);
+    }
   };
 
-  // 下载结果
-  const downloadResult = () => {
-    // 模拟下载
-    message.success('结果文件开始下载');
-  };
 
   // 地图交互处理
   const handleMapMouseMove = (e: React.MouseEvent) => {
@@ -539,13 +631,19 @@ const BiomassInversion: React.FC = () => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // 模拟像素值获取
+    // ================== 模拟像素值获取 ==================
+    /*
     const value = Math.random() * 544.2 + 29.6;
     const lat = 39.9042 + (y - rect.height / 2) * 0.001;
     const lng = 116.4074 + (x - rect.width / 2) * 0.001;
-
     setPixelInfo({ x, y, value, lat, lng });
     setShowPixelInfo(true);
+    */
+    // ================== 真实情况 ==================
+    // 此处应调用后端API或读取真实影像数据，获取(x, y)处的像素值和地理坐标
+    // 例如：fetch(`/api/pixel_info?x=${x}&y=${y}&image_id=...`).then(res => ...)
+    // setPixelInfo({ x, y, value, lat, lng });
+    // setShowPixelInfo(true);
 
     if (pixelInfoRef.current) {
       pixelInfoRef.current.style.left = `${e.clientX + 10}px`;
@@ -591,65 +689,65 @@ const BiomassInversion: React.FC = () => {
   };
 
   // 生成CDF图表配置
-  const getCDFChartOption = (): EChartsOption => {
-    return {
-      title: {
-        text: '生物量累积分布曲线',
-        left: 'center'
-      },
-      tooltip: {
-        trigger: 'axis',
-        formatter: '生物量: {b} g/m²<br>累计百分比: {c}%'
-      },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
-      },
-      xAxis: {
-        type: 'value',
-        name: '生物量 (g/m²)',
-        min: 29.6,
-        max: 573.8,
-        axisLabel: { formatter: '{value}' }
-      },
-      yAxis: {
-        type: 'value',
-        name: '累积百分比 (%)',
-        min: 0,
-        max: 100
-      },
-      series: [
-        {
-          data: cdfData.map(item => [item.biomass, item.percentage]),
-          type: 'line',
-          smooth: true,
-          lineStyle: {
-            width: 3
-          },
-          markPoint: {
-            data: [
-              { type: 'max', name: '最大值' }
-            ]
-          }
-        },
-        {
-          type: 'line',
-          data: [[threshold, 0], [threshold, 100]],
-          lineStyle: {
-            type: 'dashed',
-            color: 'red',
-            width: 2
-          },
-          symbol: 'none',
-          tooltip: {
-            formatter: `告警阈值: ${threshold} g/m²`
-          }
-        }
-      ]
-    };
-  };
+  // const getCDFChartOption = (): EChartsOption => {
+  //   return {
+  //     title: {
+  //       text: '生物量累积分布曲线',
+  //       left: 'center'
+  //     },
+  //     tooltip: {
+  //       trigger: 'axis',
+  //       formatter: '生物量: {b} g/m²<br>累计百分比: {c}%'
+  //     },
+  //     grid: {
+  //       left: '3%',
+  //       right: '4%',
+  //       bottom: '3%',
+  //       containLabel: true
+  //     },
+  //     xAxis: {
+  //       type: 'value',
+  //       name: '生物量 (g/m²)',
+  //       min: 29.6,
+  //       max: 573.8,
+  //       axisLabel: { formatter: '{value}' }
+  //     },
+  //     yAxis: {
+  //       type: 'value',
+  //       name: '累积百分比 (%)',
+  //       min: 0,
+  //       max: 100
+  //     },
+  //     series: [
+  //       {
+  //         data: cdfData.map(item => [item.biomass, item.percentage]),
+  //         type: 'line',
+  //         smooth: true,
+  //         lineStyle: {
+  //           width: 3
+  //         },
+  //         markPoint: {
+  //           data: [
+  //             { type: 'max', name: '最大值' }
+  //           ]
+  //         }
+  //       },
+  //       {
+  //         type: 'line',
+  //         data: [[threshold, 0], [threshold, 100]],
+  //         lineStyle: {
+  //           type: 'dashed',
+  //           color: 'red',
+  //           width: 2
+  //         },
+  //         symbol: 'none',
+  //         tooltip: {
+  //           formatter: `告警阈值: ${threshold} g/m²`
+  //         }
+  //       }
+  //     ]
+  //   };
+  // };
 
   // 渲染上传面板内容
   const renderUploadContent = () => (
@@ -845,7 +943,7 @@ const BiomassInversion: React.FC = () => {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
         <AntdTooltip title="此图为统计分布结果示意，实际系统将根据数据动态生成">
           <img
-            src="/images/biomass_distribution_7.png"
+            src={resultData?.biomass_distribution ? `http://localhost:8000/${resultData.biomass_distribution}` : "/images/biomass_distribution_7.png"}
             alt="生物量统计分布图"
             style={{ width: '100%', maxWidth: 320, borderRadius: 6, border: '1px solid #eee', background: '#fff' }}
           />
@@ -864,12 +962,46 @@ const BiomassInversion: React.FC = () => {
           </Select>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <a href="/biomass_statistics_7.csv" download>
+          <a href={resultData?.biomass_statistics ? `http://localhost:8000/${resultData.biomass_statistics}` : "/biomass_statistics_7.csv"} download>
             <Button icon={<DownloadOutlined />}>导出CSV</Button>
           </a>
-          <a href="/images/biomass_distribution_7.png" download>
+          <a href="http://localhost:8000/download_image/output_visualization_7.png">
             <Button icon={<DownloadOutlined />}>导出图片</Button>
           </a>
+        </div>
+      </div>
+    </TightCard>
+  );
+
+  // 统计分析卡片内容（平均值、中位数、标准差、有效像素）
+  const renderStatisticsAnalysis = () => (
+    <TightCard title="生物量统计分析" bordered={false}>
+      <div style={{ padding: '8px 0 8px 0' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', rowGap: 12, columnGap: 24 }}>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ color: '#666', fontSize: 14, marginBottom: 2 }}>平均值</div>
+            <div style={{ fontWeight: 700, fontSize: 22, lineHeight: 1.2 }}>
+              {stats?.mean} <span style={{ fontWeight: 400, fontSize: 15, marginLeft: 2 }}>g/m²</span>
+            </div>
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ color: '#666', fontSize: 14, marginBottom: 2 }}>中位数</div>
+            <div style={{ fontWeight: 700, fontSize: 22, lineHeight: 1.2 }}>
+              {stats?.median} <span style={{ fontWeight: 400, fontSize: 15, marginLeft: 2 }}>g/m²</span>
+            </div>
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ color: '#666', fontSize: 14, marginBottom: 2 }}>标准差</div>
+            <div style={{ fontWeight: 700, fontSize: 22, lineHeight: 1.2 }}>
+              {stats?.std}
+            </div>
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ color: '#666', fontSize: 14, marginBottom: 2 }}>有效像素</div>
+            <div style={{ fontWeight: 700, fontSize: 22, lineHeight: 1.2 }}>
+              {stats?.valid_pixel}
+            </div>
+          </div>
         </div>
       </div>
     </TightCard>
@@ -922,11 +1054,11 @@ const BiomassInversion: React.FC = () => {
           style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', zIndex: 1 }}
         />
       )}
-      {/* 主图 */}
+      {/* 主图：后端返回的output_visualization优先，否则用默认 */}
       {showMainImage && (
         <img
           ref={mainImgRef}
-          src="/images/输出_伪彩色output_visualization_7.png"
+          src={resultData?.output_visualization ? `http://localhost:8000/${resultData.output_visualization}` : "/images/输出_伪彩色output_visualization_7.png"}
           alt="生物量可视化结果"
           style={{
             position: 'absolute',
@@ -1003,26 +1135,8 @@ const BiomassInversion: React.FC = () => {
       {/* 右侧：统计卡片区 */}
       <div style={{ width: RIGHT_PANEL_WIDTH, display: 'flex', flexDirection: 'column', gap: 16 }}>
         {renderStatisticsChart()}
-        <TightCard title="生物量统计分析" bordered={false}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 8 }}>
-            <div>
-              <div style={{ color: '#666', fontSize: 13 }}>平均值</div>
-              <div style={{ fontSize: 18, fontWeight: 'bold' }}>271.14 g/m²</div>
-            </div>
-            <div>
-              <div style={{ color: '#666', fontSize: 13 }}>中位数</div>
-              <div style={{ fontSize: 18, fontWeight: 'bold' }}>273.23 g/m²</div>
-            </div>
-            <div>
-              <div style={{ color: '#666', fontSize: 13 }}>标准差</div>
-              <div style={{ fontSize: 18, fontWeight: 'bold' }}>41.20</div>
-            </div>
-            <div>
-              <div style={{ color: '#666', fontSize: 13 }}>有效像素</div>
-              <div style={{ fontSize: 18, fontWeight: 'bold' }}>1,048,576</div>
-            </div>
-          </div>
-        </TightCard>
+        {renderStatisticsAnalysis()}
+        {/* 其余原有统计卡片区内容... */}
         <TightCard title="生态阈值告警设置" bordered={false}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1044,15 +1158,12 @@ const BiomassInversion: React.FC = () => {
             </div>
           </div>
         </TightCard>
-        {inversionComplete && (
-          <Button
-            type="primary"
-            icon={<DownloadOutlined />}
-            onClick={downloadResult}
-            style={{ marginTop: 8 }}
-          >
-            下载结果栅格
-          </Button>
+        {resultData?.output_prediction && (
+          <a href={`http://localhost:8000/${resultData.output_prediction}`} download>
+            <Button type="primary" icon={<DownloadOutlined />} style={{ marginTop: 8, width: '100%' }}>
+              下载结果栅格
+            </Button>
+          </a>
         )}
       </div>
     </div>
