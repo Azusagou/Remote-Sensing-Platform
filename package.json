@@ -11,7 +11,7 @@
     "@types/jest": "^27.5.2",
     "@types/styled-components": "^5.1.34",
     "antd": "^4.24.15",
-    "axios": "^1.9.0",
+    "axios": "^1.11.0",
     "cesium": "^1.130.0",
     "copy-webpack-plugin": "^12.0.2",
     "echarts": "^5.5.0",

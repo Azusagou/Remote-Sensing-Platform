@@ -599,7 +599,7 @@ const BiomassInversion: React.FC = () => {
     formData.append('patch_offset_y', '0');
     formData.append('patch_size', '1024');
     formData.append('selected_date', '7');
-    formData.append('debug', 'true'); // 调试模式
+    formData.append('debug', 'false'); // 调试模式
 
     try {
       const res = await fetch('http://localhost:8000/api/biomass_predict', {
