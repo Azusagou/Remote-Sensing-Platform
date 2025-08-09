@@ -39,10 +39,18 @@ const ParameterSection = styled.div`
 
 const StyledUpload = styled(Upload)`
   width: 100%;
+  .ant-upload {
+    color: var(--text);
+  }
+  .ant-upload .ant-upload-text { color: var(--text); }
+  .ant-upload .ant-upload-hint { color: var(--text-secondary); }
 `;
 
 const UploadCard = styled(Card)`
   height: 100%;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border);
+  .ant-card-head-title { color: var(--text); }
 `;
 
 const UploadContainer = styled.div`
@@ -60,22 +68,25 @@ const VisualizationContainer = styled.div`
   padding: 0 5px;
   max-height: 95vh;
   overflow: hidden;
+  color: var(--text);
 `;
 
 const MapContainer = styled.div`
   width: 75%;
   height: 90vh;
-  border-radius: 4px;
+  border-radius: 12px;
   overflow: hidden;
   position: relative;
   cursor: crosshair;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
 `;
 
 const InteractiveMap = styled.div`
   width: 100%;
   height: 100%;
   position: relative;
-  background: #f0f0f0;
+  background: var(--card-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -104,8 +115,9 @@ const PreviewImage = styled.img`
   width: 100%;
   height: 120px;
   object-fit: cover;
-  border-radius: 4px;
-  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
 `;
 
 const ConsistencyCheck = styled.div`
@@ -161,6 +173,10 @@ const RightPanel = styled.div`
 const TightCard = styled(Card)`
   margin: 0;
   padding: 0;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border);
+  color: var(--text);
+  .ant-card-head-title { color: var(--text); }
   .ant-card-body { padding: 16px; }
 `;
 

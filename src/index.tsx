@@ -4,7 +4,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
-// 导入 antd 样式
+// 导入 antd 样式（App.tsx已导入一次，这里可省略也可保留以确保顺序）
 import 'antd/dist/antd.css';
 // 导入 Cesium 样式
 import 'cesium/Build/Cesium/Widgets/widgets.css';

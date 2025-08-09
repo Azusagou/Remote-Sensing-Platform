@@ -16,12 +16,13 @@ const PreviewContainer = styled.div`
   width: 100%;
   height: 500px;
   position: relative;
-  background-color: #f5f5f5;
-  border-radius: 4px;
+  background-color: var(--card-bg);
+  border-radius: 12px;
   overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
+  border: 1px solid var(--card-border);
 `;
 
 const ImageWrapper = styled.div<{ scale: number }>`
@@ -53,7 +54,7 @@ const ResizeHandle = styled.div<{ position: string }>`
   position: absolute;
   width: 10px;
   height: 10px;
-  background-color: white;
+  background-color: var(--card-bg);
   border: 2px solid #1890ff;
   
   ${props => {
@@ -120,10 +121,11 @@ const ControlPanel = styled.div`
   display: flex;
   gap: 8px;
   margin-top: 8px;
+  color: var(--text);
 `;
 
 const PlaceholderText = styled.p`
-  color: #666;
+  color: var(--text-secondary);
   font-size: 16px;
 `;
 

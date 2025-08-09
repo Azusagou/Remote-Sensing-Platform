@@ -5,9 +5,10 @@ import BiomassInversion from '../components/BiomassInversion';
 
 const Container = styled.div`
   padding: 24px;
-  background: #fff;
-  border-radius: 4px;
+  background: transparent;
+  border-radius: 12px;
   min-height: calc(100vh - 180px);
+  color: var(--text);
 `;
 
 const PageHeader = styled.div`
@@ -23,7 +24,7 @@ const Title = styled.h1`
 
 const Description = styled.p`
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 24px;
 `;
 
@@ -31,17 +32,13 @@ const BiomassInversionPage: React.FC = () => {
   return (
     <Container>
       <PageHeader>
-        <Breadcrumb>
-          <Breadcrumb.Item>首页</Breadcrumb.Item>
-          <Breadcrumb.Item>生物量反演</Breadcrumb.Item>
-        </Breadcrumb>
         <Title>生物量反演分析</Title>
         <Description>
           上传卫星影像、温度和降水数据，进行生物量反演分析并查看结果可视化
         </Description>
       </PageHeader>
       
-      <Card>
+      <Card style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
         <BiomassInversion />
       </Card>
     </Container>

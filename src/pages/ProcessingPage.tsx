@@ -1,30 +1,31 @@
 import React, { useState } from 'react';
-import { Tabs, Upload, Button, Card, Row, Col, Divider, Select, Switch, Progress, message } from 'antd';
+import { Tabs, Upload, Button, Card, Row, Col, Divider, Select, Progress, message } from 'antd';
 import { InboxOutlined, SelectOutlined, EyeOutlined, DownloadOutlined, RedoOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 import axios from 'axios';
 
-const { TabPane } = Tabs;
+
 const { Dragger } = Upload;
 const { Option } = Select;
 
 const Container = styled.div`
   padding: 20px;
-  background: #fff;
-  border-radius: 4px;
+  background: transparent;
+  border-radius: 12px;
   min-height: calc(100vh - 180px);
 `;
 
 const ImagePreviewArea = styled.div`
   width: 100%;
   height: 400px;
-  background: #f0f0f0;
+  background: var(--card-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: 12px;
   overflow: hidden;
   position: relative;
+  border: 1px solid var(--card-border);
   
   img {
     max-width: 100%;
@@ -68,21 +69,17 @@ const ToolbarContainer = styled.div`
   gap: 8px;
 `;
 
-const ResultCard = styled(Card)`
-  margin-top: 16px;
-  height: 400px;
-  overflow: auto;
-`;
 
 const ResultImagePreview = styled.div`
   width: 100%;
   height: 340px;
-  background: #f0f0f0;
+  background: var(--card-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: 12px;
   overflow: hidden;
+  border: 1px solid var(--card-border);
   
   img {
     max-width: 100%;
@@ -142,11 +139,8 @@ const ProcessingPage: React.FC<ProcessingPageProps> = ({ module }) => {
   const [classifyResult, setClassifyResult] = useState<any[]>([]);
   const [detectResult, setDetectResult] = useState<any[]>([]);
   const [detectResultImage, setDetectResultImage] = useState<string | null>(null);
-  const [showLegend, setShowLegend] = useState(true);
-  const [showScore, setShowScore] = useState(true);
   const [segmentMask, setSegmentMask] = useState<string | null>(null);
   const [segmentStats, setSegmentStats] = useState<any[]>([]);
-  const [maskOpacity, setMaskOpacity] = useState(0.5);
   const [changeMask, setChangeMask] = useState<string | null>(null);
   const [changeStats, setChangeStats] = useState<any | null>(null);
   const [imageInfo, setImageInfo] = useState<{width: number, height: number} | null>(null);
@@ -181,7 +175,7 @@ const ProcessingPage: React.FC<ProcessingPageProps> = ({ module }) => {
           const MIN_H = 300;
           const MAX_W = 1600;
           const MAX_H = 1600;
-          const aspect = srcWidth / srcHeight;
+        
           let targetWidth = srcWidth;
           let targetHeight = srcHeight;
           if (targetWidth > MAX_W || targetHeight > MAX_H) {
@@ -612,25 +606,27 @@ const ProcessingPage: React.FC<ProcessingPageProps> = ({ module }) => {
     letter-spacing: 1px;
   `;
   const UploadArea = styled.div`
-    background: #f4f6fa;
-    border-radius: 12px;
-    padding: 32px 16px;
-    min-height: 320px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    margin-bottom: 24px;
-  `;
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 32px 16px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+  border: 1px solid var(--card-border);
+`;
   const ResultArea = styled.div`
-    background: #fff;
-    border-radius: 12px;
-    padding: 32px 24px;
-    min-height: 320px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    margin-bottom: 24px;
-  `;
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 32px 24px;
+  min-height: 320px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+  border: 1px solid var(--card-border);
+`;
 
   // 渲染不同功能区块
   const renderContent = () => {

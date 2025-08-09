@@ -7,11 +7,13 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
+  color: var(--text);
 `;
 
 const SectionTitle = styled.h2`
   font-size: 18px;
   margin-bottom: 16px;
+  color: var(--text);
 `;
 
 const DataAnalysis: React.FC = () => {
